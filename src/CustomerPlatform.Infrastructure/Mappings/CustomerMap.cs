@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace CustomerPlatform.Infra.Mappings;
+namespace CustomerPlatform.Infrastructure.Mappings;
 
 public class CustomerMap : IEntityTypeConfiguration<Customer>
 {
@@ -13,7 +13,7 @@ public class CustomerMap : IEntityTypeConfiguration<Customer>
         builder.HasKey(c => c.Id);
 
         builder.Property(c => c.Id)
-            .HasColumnName("id");
+            .HasColumnName("customer_id");
 
         builder.Property(c => c.Email)
             .HasColumnName("email")

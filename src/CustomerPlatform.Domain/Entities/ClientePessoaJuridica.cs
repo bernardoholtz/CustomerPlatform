@@ -1,25 +1,27 @@
-﻿namespace CustomerPlatform.Domain.Entities;
+﻿using CustomerPlatform.Domain.ValueObjects;
+
+namespace CustomerPlatform.Domain.Entities;
 
 /// <summary>
 /// Cliente Pessoa Jurídica
 /// </summary>
 public class ClientePessoaJuridica : Customer
 {
-    public string RazaoSocial { get; }
-    public string NomeFantasia { get; }
-    public string CNPJ { get; }
+
+    public string RazaoSocial { get; private set; }
+    public string NomeFantasia { get; private set; }
+    public string CNPJ { get; private set; }
 
     protected ClientePessoaJuridica() { }
 
     public ClientePessoaJuridica(
-        Guid id,
         string razaoSocial,
         string nomeFantasia,
         string cnpj,
         string email,
         string telefone,
         Endereco endereco)
-        : base(id, email, telefone, endereco)
+        : base( email, telefone, endereco)
     {
         RazaoSocial = razaoSocial;
         NomeFantasia = nomeFantasia;
@@ -60,5 +62,22 @@ public class ClientePessoaJuridica : Customer
         int digito2 = resto < 2 ? 0 : 11 - resto;
 
         return cnpj[12] - '0' == digito1 && cnpj[13] - '0' == digito2;
+    }
+
+    public void Atualizar(string razaoSocial,
+      string nomeFantasia,
+      string cnpj,
+      string email,
+      string telefone,
+      Endereco endereco)
+    {
+        RazaoSocial = razaoSocial;
+        NomeFantasia = nomeFantasia;
+        CNPJ = CNPJ;
+
+        if (!ValidarDocumento())
+            throw new ArgumentException("CNPJ inválido");
+
+        base.AtualizarCustomer(email, telefone, endereco);
     }
 }

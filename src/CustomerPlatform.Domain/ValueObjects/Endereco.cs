@@ -1,4 +1,4 @@
-﻿namespace CustomerPlatform.Domain.Entities;
+﻿namespace CustomerPlatform.Domain.ValueObjects;
 
 /// <summary>
 /// Endereço do cliente (Value Object)

@@ -1,3 +1,5 @@
+using CustomerPlatform.Domain.ValueObjects;
+
 namespace CustomerPlatform.Domain.Entities;
 
 /// <summary>
@@ -6,20 +8,19 @@ namespace CustomerPlatform.Domain.Entities;
 public abstract class Customer
 {
     public Guid Id { get; }
-    public string Email { get; }
-    public string Telefone { get; }
+    public string Email { get; private set; }
+    public string Telefone { get; private set; }
     public DateTime DataCriacao { get; }
-    public DateTime? DataAtualizacao { get; protected set; }
-    public Endereco Endereco { get; }
+    public DateTime? DataAtualizacao { get; private set; }
+    public Endereco Endereco { get; private set; }
 
     protected Customer() { }
     protected Customer(
-        Guid id,
         string email,
         string telefone,
         Endereco endereco)
     {
-        Id = id;
+        Id = Guid.NewGuid();
         Email = email;
         Telefone = telefone;
         Endereco = endereco;
@@ -29,4 +30,13 @@ public abstract class Customer
     public abstract string GetDocumento();
     public abstract string GetNome();
     public abstract bool ValidarDocumento();
+    protected void AtualizarCustomer(string email,
+        string telefone,
+        Endereco endereco)
+    {
+        Email = email;
+        Telefone = telefone;
+        Endereco = endereco;
+        DataAtualizacao = DateTime.UtcNow;
+    }
 }

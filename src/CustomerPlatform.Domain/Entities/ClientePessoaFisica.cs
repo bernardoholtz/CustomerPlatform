@@ -1,24 +1,25 @@
-﻿namespace CustomerPlatform.Domain.Entities;
+﻿using CustomerPlatform.Domain.ValueObjects;
+
+namespace CustomerPlatform.Domain.Entities;
 
 /// <summary>
 /// Cliente Pessoa Física
 /// </summary>
 public class ClientePessoaFisica : Customer
 {
-    public string Nome { get; }
-    public string CPF { get; }
-    public DateTime DataNascimento { get; }
+    public string Nome { get; private set; }
+    public string CPF { get; private set; }
+    public DateTime DataNascimento { get; private set; }
 
     protected ClientePessoaFisica() { }
     public ClientePessoaFisica(
-        Guid id,
         string nome,
         string cpf,
         DateTime dataNascimento,
         string email,
         string telefone,
         Endereco endereco)
-        : base(id, email, telefone, endereco)
+        : base(email, telefone, endereco)
     {
         Nome = nome;
         CPF = cpf;
@@ -56,5 +57,22 @@ public class ClientePessoaFisica : Customer
         int digito2 = resto < 2 ? 0 : 11 - resto;
 
         return cpf[9] - '0' == digito1 && cpf[10] - '0' == digito2;
+    }
+
+    public void Atualizar(string nome,
+        string cpf,
+        DateTime dataNascimento,
+        string email,
+        string telefone,
+        Endereco endereco)
+    {
+        Nome = nome;
+        CPF = cpf;
+        DataNascimento = dataNascimento;
+
+        if (!ValidarDocumento())
+            throw new ArgumentException("CPF inválido");
+
+        base.AtualizarCustomer(email,telefone,endereco);
     }
 }
