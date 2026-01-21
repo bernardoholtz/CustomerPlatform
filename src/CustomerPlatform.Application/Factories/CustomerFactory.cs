@@ -7,7 +7,7 @@ namespace CustomerPlatform.Application.Factories
 {
     public static class CustomerFactory
     {
-        public static Customer Criar(CreateCustomerCommand command)
+        public static Customer CriarInstancia(CreateCustomerCommand command)
         {
             var endereco = new Endereco(
                 command.Endereco.Logradouro,

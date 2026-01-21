@@ -3,9 +3,6 @@ using Nest;
 
 namespace CustomerPlatform.Infrastructure.Search
 {
-    /// <summary>
-    /// Factory para criar instância do Elasticsearch client
-    /// </summary>
     public static class ElasticsearchClientFactory
     {
         public static IElasticClient CreateClient(IConfiguration configuration)

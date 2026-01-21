@@ -1,8 +1,5 @@
 ﻿namespace CustomerPlatform.Domain.ValueObjects;
 
-/// <summary>
-/// Endereço do cliente (Value Object)
-/// </summary>
 public class Endereco
 {
     public string Logradouro { get; }

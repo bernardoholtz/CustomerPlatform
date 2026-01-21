@@ -4,9 +4,6 @@ using MediatR;
 
 namespace CustomerPlatform.Application.Commands.SearchCustomer
 {
-    /// <summary>
-    /// Handler para busca avançada de clientes
-    /// </summary>
     public class SearchCustomerHandler : IRequestHandler<SearchCustomerCommand, CustomerSearchResponse>
     {
         private readonly ISearchService _searchService;
@@ -20,7 +17,6 @@ namespace CustomerPlatform.Application.Commands.SearchCustomer
             SearchCustomerCommand command,
             CancellationToken cancellationToken)
         {
-            // Validação básica
             if (command.Page < 1)
             {
                 command.Page = 1;
@@ -31,7 +27,6 @@ namespace CustomerPlatform.Application.Commands.SearchCustomer
                 command.PageSize = Math.Clamp(command.PageSize, 1, 100);
             }
 
-            // Converte Command para Request
             var request = new CustomerSearchRequest
             {
                 Nome = command.Nome,

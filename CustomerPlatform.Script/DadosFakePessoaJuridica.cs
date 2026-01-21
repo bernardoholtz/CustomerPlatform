@@ -1,8 +1,9 @@
 ﻿using Bogus;
+using Bogus.Extensions.Brazil;
 
 namespace CustomerPlatform.Script
 {
-    public static class PessoaFisica
+    public static class DadosFakePessoaJuridica
     {
         public static List<object> GerarMassaDeDados(int quantidade)
         {
@@ -11,6 +12,7 @@ namespace CustomerPlatform.Script
 
             for (int i = 0; i < quantidade; i++)
             {
+
                 var registro = new
                 {
                     email = faker.Internet.Email().ToLower(),
@@ -25,10 +27,9 @@ namespace CustomerPlatform.Script
                         estado = faker.Address.StateAbbr()
                     },
 
-                    nome = faker.Name.FullName() ,
-                    cpf = GerarCpfValido(),
-                    dataNascimento =  faker.Date.Past(30, DateTime.Now.AddYears(-18)) 
-
+                    razaoSocial = faker.Company.CompanyName() ,
+                    nomeFantasia = faker.Company.CompanySuffix() ,
+                    cnpj = GerarCnpjValido()
                 };
 
                 lista.Add(registro);
@@ -37,17 +38,20 @@ namespace CustomerPlatform.Script
             return lista;
         }
 
-        private static string GerarCpfValido()
+        private static string GerarCnpjValido()
         {
             Random random = new Random();
-            int[] multiplicador1 = new int[9] { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
-            int[] multiplicador2 = new int[10] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+            int[] multiplicador1 = new int[12] { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
+            int[] multiplicador2 = new int[13] { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
 
-            string semente = random.Next(100000000, 999999999).ToString();
+            // Gera os 8 primeiros dígitos aleatórios
+            string semente = random.Next(10000000, 99999999).ToString();
+            // Adiciona o sufixo padrão de matriz (0001)
+            semente += "0001";
 
-            // Calcula primeiro dígito
+            // Calcula o primeiro dígito verificador
             int soma = 0;
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 12; i++)
                 soma += int.Parse(semente[i].ToString()) * multiplicador1[i];
 
             int resto = soma % 11;
@@ -55,9 +59,9 @@ namespace CustomerPlatform.Script
 
             semente += dg1;
 
-            // Calcula segundo dígito
+            // Calcula o segundo dígito verificador
             soma = 0;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 13; i++)
                 soma += int.Parse(semente[i].ToString()) * multiplicador2[i];
 
             resto = soma % 11;

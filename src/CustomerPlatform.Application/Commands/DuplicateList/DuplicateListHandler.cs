@@ -4,9 +4,6 @@ using MediatR;
 
 namespace CustomerPlatform.Application.Commands.DuplicateList
 {
-    /// <summary>
-    /// Handler para busca avançada de clientes
-    /// </summary>
     public class DuplicateListHandler : IRequestHandler<DuplicateListCommand, List<SuspeitaDuplicidade>>
     {
         private readonly IUnitOfWork _unitOfWork;

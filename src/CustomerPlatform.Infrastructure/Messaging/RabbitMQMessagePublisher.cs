@@ -8,9 +8,6 @@ using System.Text.Json;
 
 namespace CustomerPlatform.Infrastructure.Messaging
 {
-    /// <summary>
-    /// Implementação do publisher de mensagens usando RabbitMQ
-    /// </summary>
     public class RabbitMQMessagePublisher : IMessagePublisher, IDisposable
     {
         private readonly IConnection _connection;
@@ -24,10 +21,10 @@ namespace CustomerPlatform.Infrastructure.Messaging
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            var hostName = configuration["RabbitMQ:HostName"] ?? "localhost";
-            var port = int.Parse(configuration["RabbitMQ:Port"] ?? "5672");
-            var userName = configuration["RabbitMQ:UserName"] ?? "guest";
-            var password = configuration["RabbitMQ:Password"] ?? "guest";
+            var hostName = configuration["RabbitMQ:HostName"] ;
+            var port = int.Parse(configuration["RabbitMQ:Port"] );
+            var userName = configuration["RabbitMQ:UserName"];
+            var password = configuration["RabbitMQ:Password"];
 
             var factory = new ConnectionFactory
             {
@@ -55,7 +52,6 @@ namespace CustomerPlatform.Infrastructure.Messaging
             try
             {
                 using var _channel = _connection.CreateModel();
-                // Declara a fila se não existir
                 _channel.QueueDeclare(
                     queue: queueName,
                     durable: true,
@@ -67,7 +63,7 @@ namespace CustomerPlatform.Infrastructure.Messaging
                 var body = Encoding.UTF8.GetBytes(json);
 
                 var properties = _channel.CreateBasicProperties();
-                properties.Persistent = true; // Garante que a mensagem será persistida
+                properties.Persistent = true; 
 
                 _channel.BasicPublish(
                     exchange: string.Empty,

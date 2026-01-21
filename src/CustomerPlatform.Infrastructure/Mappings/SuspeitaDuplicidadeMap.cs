@@ -24,19 +24,16 @@ public class SuspeitaDuplicidadeFisicaMap : IEntityTypeConfiguration<SuspeitaDup
         builder.Property(x => x.DataDeteccao)
             .IsRequired();
 
-        // Relacionamento com o Cliente Original
         builder.HasOne(x => x.CustomerOriginal)
-            .WithMany() // Se você não quiser uma lista de suspeitas dentro do Customer
+            .WithMany() 
             .HasForeignKey(x => x.IdOriginal)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Relacionamento com o Cliente Suspeito
         builder.HasOne(x => x.CustomerSuspeito)
             .WithMany()
             .HasForeignKey(x => x.IdSuspeito)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Índice para acelerar buscas por cliente
         builder.HasIndex(x => x.IdOriginal);
         builder.HasIndex(x => x.IdSuspeito);
     }

@@ -2,9 +2,6 @@ using CustomerPlatform.Domain.ValueObjects;
 
 namespace CustomerPlatform.Domain.Entities;
 
-/// <summary>
-/// Entidade base para clientes
-/// </summary>
 public abstract class Customer
 {
     public Guid Id { get; }

@@ -17,7 +17,11 @@ namespace CustomerPlatform.Api.Controllers
         public CustomerController(IMediator mediator) {
             _mediator = mediator;
         }
-        
+        /// <summary>
+        /// Cadastrar cliente
+        /// </summary>
+        /// <param name="command">Parâmetros para cadastro</param>
+        /// <returns>Resultado paginado ordenado por relevância</returns>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateCustomerCommand command)
         {
@@ -26,6 +30,11 @@ namespace CustomerPlatform.Api.Controllers
             return CreatedAtAction(nameof(Post), new { customer }, null);
         }
 
+        /// <summary>
+        /// Editar cliente
+        /// </summary>
+        /// <param name="command">Parâmetros para edição</param>
+        /// <returns>Resultado paginado ordenado por relevância</returns>
         [HttpPut]
         public async Task<IActionResult> Put([FromBody] UpdateCustomerCommand command)
         {
@@ -52,6 +61,11 @@ namespace CustomerPlatform.Api.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Editar cliente
+        /// </summary>
+        /// <param name="command">Parâmetros de busca</param>
+        /// <returns>Lista de duplicatas por relevância</returns>
         [HttpGet("duplicates")]
         public async Task<IActionResult> Get([FromQuery] DuplicateListCommand command, CancellationToken cancellationToken)
         {

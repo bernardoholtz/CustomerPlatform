@@ -2,9 +2,6 @@
 
 namespace CustomerPlatform.Domain.Entities;
 
-/// <summary>
-/// Cliente Pessoa Física
-/// </summary>
 public class ClientePessoaFisica : Customer
 {
     public string Nome { get; private set; }

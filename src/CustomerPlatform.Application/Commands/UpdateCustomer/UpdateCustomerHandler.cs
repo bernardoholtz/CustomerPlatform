@@ -27,7 +27,6 @@ namespace CustomerPlatform.Application.Commands.UpdateCustomer
 
         public async Task<Guid> Handle(UpdateCustomerCommand command, CancellationToken cancellationToken)
         {
-            // 1. Busca o cliente existente
             var customer = await _unitOfWork.Customers.BuscarPorId(command.Id);
 
             if (customer == null)
@@ -35,17 +34,13 @@ namespace CustomerPlatform.Application.Commands.UpdateCustomer
                 throw new InvalidOperationException("Cliente não encontrado.");
             }
 
-            // 2. Valida documento duplicado (excluindo o próprio cliente)
             await ValidateDocumentAsync(customer, command);
 
-            // 3. Atualiza a entidade
             UpdateCustomerEntity(customer, command);
 
-            // 4. Persiste no banco
             await _unitOfWork.Customers.Editar(customer);
             await _unitOfWork.CommitAsync();
 
-            // 5. Atualiza índice no Elasticsearch (fire and forget para não bloquear)
             _ = Task.Run(async () =>
             {
                 try
@@ -54,12 +49,9 @@ namespace CustomerPlatform.Application.Commands.UpdateCustomer
                 }
                 catch (Exception ex)
                 {
-                    // Log do erro, mas não falha a operação principal
-                    // Em produção, considerar usar um serviço de retry ou fila
                 }
             }, cancellationToken);
 
-            // 6. Publica evento
             var evento = CustomerEventFactory.CreateCustomerUpdatedEvent(customer);
             await _messagePublisher.PublishAsync(evento, cancellationToken);
 

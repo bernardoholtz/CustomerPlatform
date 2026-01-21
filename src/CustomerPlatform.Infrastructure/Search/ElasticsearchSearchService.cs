@@ -5,9 +5,6 @@ using Nest;
 
 namespace CustomerPlatform.Infrastructure.Search
 {
-    /// <summary>
-    /// Implementação do serviço de busca avançada usando Elasticsearch
-    /// </summary>
     public class ElasticsearchSearchService : ISearchService
     {
         private readonly IElasticClient _elasticClient;

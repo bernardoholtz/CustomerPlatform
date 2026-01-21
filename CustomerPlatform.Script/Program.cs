@@ -1,24 +1,21 @@
-using CustomerPlatform.Script;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using MediatR;
 using CustomerPlatform.Application.Commands.CreateCustomer;
-using CustomerPlatform.Domain.Entities;
+using CustomerPlatform.Application.Services;
+using CustomerPlatform.Domain.Enums;
 using CustomerPlatform.Domain.Interfaces;
 using CustomerPlatform.Infrastructure.Contexts;
 using CustomerPlatform.Infrastructure.Messaging;
 using CustomerPlatform.Infrastructure.Repositories;
 using CustomerPlatform.Infrastructure.Search;
-using CustomerPlatform.Application.Services;
+using CustomerPlatform.Script;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Nest;
-using CustomerPlatform.Domain.Enums;
 
-// --- Configuração da Injeção de Dependência ---
 var services = new ServiceCollection();
 
-// Configuração básica (pode ser expandida conforme necessário)
 var configuration = new ConfigurationBuilder()
     .AddInMemoryCollection(new Dictionary<string, string?>
     {
@@ -38,7 +35,6 @@ var configuration = new ConfigurationBuilder()
 
 services.AddSingleton<IConfiguration>(configuration);
 
-// Adiciona Logging ANTES do MediatR (necessário para o MediatR funcionar corretamente)
 services.AddLogging(builder => 
 {
     builder.AddConsole();
@@ -46,17 +42,16 @@ services.AddLogging(builder =>
     builder.AddConfiguration(configuration.GetSection("Logging"));
 });
 
-// Registra DbContext
 services.AddDbContext<CustomerDbContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("Postgres")));
 
-// Registra repositórios e serviços
 services.AddScoped<ICustomerRepository, CustomerRepository>();
 services.AddScoped<IUnitOfWork, UnitOfWork>();
 services.AddSingleton<IMessagePublisher, RabbitMQMessagePublisher>();
 services.AddScoped<IDocumentValidationService, DocumentValidationService>();
+services.AddScoped<IElasticsearchIndexService, ElasticsearchIndexService>();
 
-// Elasticsearch
+
 services.AddSingleton<IElasticClient>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
@@ -64,30 +59,25 @@ services.AddSingleton<IElasticClient>(sp =>
 });
 services.AddScoped<IElasticsearchIndexService, ElasticsearchIndexService>();
 services.AddScoped<ISearchService, ElasticsearchSearchService>();
-
-// Registra o MediatR e procura Handlers no assembly de Application
-// Nota: MediatR 14.0.0 requer LicenseKey (desde v13.0.0)
-// Para uso não comercial, você pode usar uma string vazia ou obter uma licença em https://github.com/jbogard/MediatR
 services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateCustomerHandler).Assembly);
-    // Para desenvolvimento/testes, você pode deixar vazio ou usar uma licença válida
     cfg.LicenseKey = string.Empty;
 });
 
 var serviceProvider = services.BuildServiceProvider();
 
-// --- Uso do MediatR ---
+IElasticsearchIndexService elasticsearchIndexService = serviceProvider.GetRequiredService<IElasticsearchIndexService>();
+await elasticsearchIndexService.DeleteAllAsync();
+
 Console.WriteLine("Iniciando processamento da massa Pessoa Física...");
-var massaDeDadosPF = PessoaFisica.GerarMassaDeDados(500);
+var massaDeDadosPF = DadosFakePessoaFisica.GerarMassaDeDados(200);
 
 foreach (var item in massaDeDadosPF)
 {
-    // Cria um scope para cada operação (necessário para serviços scoped como DbContext)
     using var scope = serviceProvider.CreateScope();
     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
     
-    // Extrai dados do objeto anônimo usando reflection
     var tipo = item.GetType();
     var email = tipo.GetProperty("email")?.GetValue(item)?.ToString() ?? string.Empty;
     var telefone = tipo.GetProperty("telefone")?.GetValue(item)?.ToString() ?? string.Empty;
@@ -133,15 +123,13 @@ foreach (var item in massaDeDadosPF)
 }
 
 Console.WriteLine("Iniciando processamento da massa Pessoa Jurídica...");
-var massaDeDadosPJ = Dados.GerarMassaDeDados(500);
+var massaDeDadosPJ = DadosFakePessoaJuridica.GerarMassaDeDados(200);
 
 foreach (var item in massaDeDadosPJ)
 {
-    // Cria um scope para cada operação (necessário para serviços scoped como DbContext)
     using var scope = serviceProvider.CreateScope();
     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
     
-    // Extrai dados do objeto anônimo usando reflection
     var tipo = item.GetType();
     var email = tipo.GetProperty("email")?.GetValue(item)?.ToString() ?? string.Empty;
     var telefone = tipo.GetProperty("telefone")?.GetValue(item)?.ToString() ?? string.Empty;

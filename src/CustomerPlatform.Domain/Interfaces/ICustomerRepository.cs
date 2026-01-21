@@ -1,5 +1,4 @@
 ﻿using CustomerPlatform.Domain.Entities;
-using CustomerPlatform.Domain.Enums;
 
 namespace CustomerPlatform.Domain.Interfaces
 {

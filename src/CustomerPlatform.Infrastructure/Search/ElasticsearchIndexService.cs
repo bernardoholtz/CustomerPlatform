@@ -7,9 +7,6 @@ using Nest;
 
 namespace CustomerPlatform.Infrastructure.Search
 {
-    /// <summary>
-    /// Implementação do serviço de indexação no Elasticsearch
-    /// </summary>
     public class ElasticsearchIndexService : IElasticsearchIndexService
     {
         private readonly IElasticClient _elasticClient;
@@ -194,6 +191,17 @@ namespace CustomerPlatform.Infrastructure.Search
             }
 
             return document;
+        }
+
+        public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await _elasticClient.Indices.DeleteAsync("customers");
+
+            if (response.IsValid)
+            {
+                _logger.LogInformation("Clientes removidos com sucesso");
+            }
+
         }
     }
 }

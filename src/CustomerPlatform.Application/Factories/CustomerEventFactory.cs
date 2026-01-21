@@ -33,7 +33,9 @@ namespace CustomerPlatform.Application.Factories
                 Timestamp = DateTime.UtcNow,
                 Data = new CustomerEventData
                 {
-                    ClienteId = customer.Id
+                    ClienteId = customer.Id,
+                    Telefone = customer.Telefone,
+                    Email = customer.Email,
                 }
             };
 

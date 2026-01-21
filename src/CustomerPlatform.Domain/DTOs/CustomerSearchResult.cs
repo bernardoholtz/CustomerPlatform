@@ -1,8 +1,5 @@
 namespace CustomerPlatform.Domain.DTOs
 {
-    /// <summary>
-    /// DTO para resultado de busca de cliente
-    /// </summary>
     public class CustomerSearchResult
     {
         public Guid Id { get; set; }
@@ -19,9 +16,6 @@ namespace CustomerPlatform.Domain.DTOs
         public EnderecoSearchResult? Endereco { get; set; }
     }
 
-    /// <summary>
-    /// DTO para endereço no resultado de busca
-    /// </summary>
     public class EnderecoSearchResult
     {
         public string Logradouro { get; set; } = string.Empty;
@@ -32,9 +26,6 @@ namespace CustomerPlatform.Domain.DTOs
         public string CEP { get; set; } = string.Empty;
     }
 
-    /// <summary>
-    /// DTO para resposta paginada de busca
-    /// </summary>
     public class CustomerSearchResponse
     {
         public List<CustomerSearchResult> Results { get; set; } = new();

@@ -2,9 +2,6 @@
 
 namespace CustomerPlatform.Domain.Entities;
 
-/// <summary>
-/// Cliente Pessoa Jurídica
-/// </summary>
 public class ClientePessoaJuridica : Customer
 {
 

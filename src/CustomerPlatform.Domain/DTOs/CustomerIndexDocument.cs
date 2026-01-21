@@ -1,8 +1,5 @@
 namespace CustomerPlatform.Domain.DTOs
 {
-    /// <summary>
-    /// Documento para indexação no Elasticsearch
-    /// </summary>
     public class CustomerIndexDocument
     {
         public Guid Id { get; set; }
@@ -18,9 +15,6 @@ namespace CustomerPlatform.Domain.DTOs
         public EnderecoIndexDocument? Endereco { get; set; }
     }
 
-    /// <summary>
-    /// Endereço para indexação
-    /// </summary>
     public class EnderecoIndexDocument
     {
         public string Logradouro { get; set; } = string.Empty;

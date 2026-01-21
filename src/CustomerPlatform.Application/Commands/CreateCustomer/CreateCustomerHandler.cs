@@ -29,17 +29,13 @@ namespace CustomerPlatform.Application.Commands.CreateCustomer
            CreateCustomerCommand command,
            CancellationToken cancellationToken)
         {
-            // 1. Cria a entidade Customer
-            var customer = CustomerFactory.Criar(command);
+            var customer = CustomerFactory.CriarInstancia(command);
 
-            // 2. Valida documento duplicado
             await ValidateDocumentAsync(customer);
 
-            // 3. Persiste no banco
             await _unitOfWork.Customers.Criar(customer);
             await _unitOfWork.CommitAsync();
 
-            // 4. Indexa no Elasticsearch (fire and forget para não bloquear)
             _ = Task.Run(async () =>
             {
                 try
@@ -48,12 +44,9 @@ namespace CustomerPlatform.Application.Commands.CreateCustomer
                 }
                 catch (Exception ex)
                 {
-                    // Log do erro, mas não falha a operação principal
-                    // Em produção, considerar usar um serviço de retry ou fila
                 }
             }, cancellationToken);
 
-            // 5. Publica evento
             var evento = CustomerEventFactory.CreateCustomerCreatedEvent(customer);
             await _messagePublisher.PublishAsync(evento, cancellationToken);
 

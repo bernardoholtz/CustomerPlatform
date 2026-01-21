@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CustomerPlatform.Domain.Entities
+﻿namespace CustomerPlatform.Domain.Entities
 {
     public class SuspeitaDuplicidade
     {
@@ -15,9 +9,6 @@ namespace CustomerPlatform.Domain.Entities
         public Guid IdSuspeito { get; set; }
         public virtual Customer CustomerSuspeito { get; set; }
         public double Score { get; set; }
-
-        // O campo que você sugeriu:
-        // Armazena algo como: {"campos": ["Nome", "Email"], "detalhes": "Nome 85% similar, Email idêntico"}
         public string DetalhesSimilaridade { get; set; }
 
         public DateTime DataDeteccao { get; set; } = DateTime.UtcNow;

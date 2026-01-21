@@ -25,6 +25,7 @@ namespace CustomerPlatform.Infrastructure.Repositories
         {
             return await _context.SuspeitaDuplicidades
                 .Where(s => s.DataDeteccao >= dataIni && s.DataDeteccao <= dataFim)
+                .OrderByDescending(s => s.Score)
                 .ToListAsync();
         }
 

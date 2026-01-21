@@ -9,12 +9,10 @@ public class CustomerDbContext : DbContext
         : base(options)
     {
     }
-
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<ClientePessoaFisica> PessoaFisica => Set<ClientePessoaFisica>();
     public DbSet<ClientePessoaJuridica> PessoaJuridica => Set<ClientePessoaJuridica>();
     public DbSet<SuspeitaDuplicidade> SuspeitaDuplicidades => Set<SuspeitaDuplicidade>();
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
