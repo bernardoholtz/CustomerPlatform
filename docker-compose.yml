@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+   # Banco de Dados Relacional - PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: customerplatform-postgres
+    environment:
+      POSTGRES_DB: customerplatform
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - customerplatform-network
+
+  # Message Broker - RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: customerplatform-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # Porta AMQP
+      - "15672:15672" # Porta Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - customerplatform-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: customerplatform-elasticsearch
+    environment:
+      - node.name=customerplatform-es
+      - cluster.name=customerplatform-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+
+      # Segurança DESATIVADA (DEV)
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+
+      # JVM
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+    ports:
+      - "9200:9200"
+
+    networks:
+      - customerplatform-network
+
+
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  elasticsearch_data:
+
+networks:
+  customerplatform-network:
+    driver: bridge
+

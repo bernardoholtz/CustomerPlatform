@@ -1,4 +1,4 @@
-﻿using CustomerPlatform.Application.DTO;
+﻿using CustomerPlatform.Application.Commands.CreateCustomer;
 using CustomerPlatform.Domain.Entities;
 using CustomerPlatform.Domain.Enums;
 using CustomerPlatform.Domain.ValueObjects;
@@ -7,36 +7,36 @@ namespace CustomerPlatform.Application.Factories
 {
     public static class CustomerFactory
     {
-        public static Customer Criar(CreateCustomerRequest request)
+        public static Customer Criar(CreateCustomerCommand command)
         {
             var endereco = new Endereco(
-                request.Endereco.Logradouro,
-                request.Endereco.Numero,
-                request.Endereco.CEP,
-                request.Endereco.Cidade,
-                request.Endereco.Estado,
-                request.Endereco.Complemento
+                command.Endereco.Logradouro,
+                command.Endereco.Numero,
+                command.Endereco.CEP,
+                command.Endereco.Cidade,
+                command.Endereco.Estado,
+                command.Endereco.Complemento
             );
 
-            return request.TipoCliente switch
+            return command.TipoCliente switch
             {
                 TipoCliente.PessoaFisica =>
                     new ClientePessoaFisica(
-                        request.Nome!,
-                        request.CPF!,
-                        request.DataNascimento!.Value,
-                        request.Email,
-                        request.Telefone,
+                        command.Nome!,
+                        command.CPF!,
+                        command.DataNascimento!.Value,
+                        command.Email,
+                        command.Telefone,
                         endereco
                     ),
 
                 TipoCliente.PessoaJuridica =>
                     new ClientePessoaJuridica(
-                        request.RazaoSocial!,
-                        request.NomeFantasia!,
-                        request.CNPJ!,
-                        request.Email,
-                        request.Telefone,
+                        command.RazaoSocial!,
+                        command.NomeFantasia!,
+                        command.CNPJ!,
+                        command.Email,
+                        command.Telefone,
                         endereco
                     ),
 

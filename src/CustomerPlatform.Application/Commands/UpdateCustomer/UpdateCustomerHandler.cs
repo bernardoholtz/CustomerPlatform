@@ -1,55 +1,109 @@
-﻿using CustomerPlatform.Domain.Entities;
+using CustomerPlatform.Application.Factories;
+using CustomerPlatform.Application.Services;
+using CustomerPlatform.Domain.Entities;
 using CustomerPlatform.Domain.Interfaces;
+using MediatR;
 
 namespace CustomerPlatform.Application.Commands.UpdateCustomer
 {
-    public class UpdateCustomerHandler
+    public class UpdateCustomerHandler : IRequestHandler<UpdateCustomerCommand, Guid>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMessagePublisher _messagePublisher;
+        private readonly IDocumentValidationService _documentValidationService;
+        private readonly IElasticsearchIndexService _elasticsearchIndexService;
 
-        public UpdateCustomerHandler(IUnitOfWork unitOfWork)
+        public UpdateCustomerHandler(
+            IUnitOfWork unitOfWork, 
+            IMessagePublisher messagePublisher,
+            IDocumentValidationService documentValidationService,
+            IElasticsearchIndexService elasticsearchIndexService)
         {
             _unitOfWork = unitOfWork;
+            _messagePublisher = messagePublisher;
+            _documentValidationService = documentValidationService;
+            _elasticsearchIndexService = elasticsearchIndexService;
         }
 
-        public async Task<Guid> Handle(UpdateCustomerCommand command)
+        public async Task<Guid> Handle(UpdateCustomerCommand command, CancellationToken cancellationToken)
         {
-            var customer = await _unitOfWork.Customers.BuscarPorId(command.Request.Id);
+            // 1. Busca o cliente existente
+            var customer = await _unitOfWork.Customers.BuscarPorId(command.Id);
 
-            if (customer == null) {
-                throw new Exception("Cliente não encontrado.");
+            if (customer == null)
+            {
+                throw new InvalidOperationException("Cliente não encontrado.");
             }
-                 
+
+            // 2. Valida documento duplicado (excluindo o próprio cliente)
+            await ValidateDocumentAsync(customer, command);
+
+            // 3. Atualiza a entidade
+            UpdateCustomerEntity(customer, command);
+
+            // 4. Persiste no banco
+            await _unitOfWork.Customers.Editar(customer);
+            await _unitOfWork.CommitAsync();
+
+            // 5. Atualiza índice no Elasticsearch (fire and forget para não bloquear)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _elasticsearchIndexService.IndexCustomerAsync(customer, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // Log do erro, mas não falha a operação principal
+                    // Em produção, considerar usar um serviço de retry ou fila
+                }
+            }, cancellationToken);
+
+            // 6. Publica evento
+            var evento = CustomerEventFactory.CreateCustomerUpdatedEvent(customer);
+            await _messagePublisher.PublishAsync(evento, cancellationToken);
+
+            return customer.Id;
+        }
+
+        private async Task ValidateDocumentAsync(Customer customer, UpdateCustomerCommand command)
+        {
+            switch (customer)
+            {
+                case ClientePessoaFisica:
+                    await _documentValidationService.ValidateCpfAsync(command.CPF!, command.Id);
+                    break;
+
+                case ClientePessoaJuridica:
+                    await _documentValidationService.ValidateCnpjAsync(command.CNPJ!, command.Id);
+                    break;
+            }
+        }
+
+        private static void UpdateCustomerEntity(Customer customer, UpdateCustomerCommand command)
+        {
             switch (customer)
             {
                 case ClientePessoaFisica pf:
-                    // Aqui você tem acesso aos campos de PF
-                    pf.Atualizar(command.Request.Nome,
-                        command.Request.CPF,
-                        command.Request.DataNascimento,
-                        command.Request.Email,
-                        command.Request.Telefone,
-                        command.Request.Endereco);
-                    _unitOfWork.Customers.Editar(pf);
+                    pf.Atualizar(
+                        command.Nome!,
+                        command.CPF!,
+                        command.DataNascimento,
+                        command.Email,
+                        command.Telefone,
+                        command.Endereco);
                     break;
 
                 case ClientePessoaJuridica pj:
-                    // Aqui você tem acesso aos campos de PJ
-                    pj.Atualizar(command.Request.RazaoSocial,
-                      command.Request.NomeFantasia,
-                      command.Request.CNPJ,
-                      command.Request.Email,
-                      command.Request.Telefone,
-                      command.Request.Endereco);
-                    _unitOfWork.Customers.Editar(pj);
+                    pj.Atualizar(
+                        command.RazaoSocial!,
+                        command.NomeFantasia!,
+                        command.CNPJ!,
+                        command.Email,
+                        command.Telefone,
+                        command.Endereco);
                     break;
             }
-            ;
-
-            await _unitOfWork.CommitAsync();
-            return customer.Id;
-
         }
     }
-
 }

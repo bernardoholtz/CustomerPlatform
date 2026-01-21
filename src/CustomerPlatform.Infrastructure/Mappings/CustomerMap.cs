@@ -50,7 +50,7 @@ public class CustomerMap : IEntityTypeConfiguration<Customer>
 
             endereco.Property(e => e.CEP)
                 .HasColumnName("cep")
-                .HasMaxLength(8)
+                .HasMaxLength(10)
                 .IsRequired();
 
             endereco.Property(e => e.Cidade)

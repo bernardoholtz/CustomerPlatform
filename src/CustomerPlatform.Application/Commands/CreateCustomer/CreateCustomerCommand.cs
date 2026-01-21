@@ -1,11 +1,11 @@
 ﻿using CustomerPlatform.Domain.Enums;
 using CustomerPlatform.Domain.ValueObjects;
+using MediatR;
 
-namespace CustomerPlatform.Application.DTO
+namespace CustomerPlatform.Application.Commands.CreateCustomer
 {
-    public class CreateCustomerRequest
+    public class CreateCustomerCommand : IRequest<Guid>
     {
-        // Comuns
         public string Email { get; set; }
         public string Telefone { get; set; }
         public Endereco Endereco { get; set; }

@@ -1,6 +1,8 @@
-﻿using CustomerPlatform.Application.Commands.CreateCustomer;
+using CustomerPlatform.Application.Commands.CreateCustomer;
+using CustomerPlatform.Application.Commands.DuplicateList;
+using CustomerPlatform.Application.Commands.SearchCustomer;
 using CustomerPlatform.Application.Commands.UpdateCustomer;
-using CustomerPlatform.Application.DTO;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomerPlatform.Api.Controllers
@@ -9,31 +11,53 @@ namespace CustomerPlatform.Api.Controllers
     [Route("api/[controller]")]
     public class CustomerController : ControllerBase
     {
-        private readonly CreateCustomerHandler _createHandler;
-        private readonly UpdateCustomerHandler _updateHandler;
 
-        public CustomerController(CreateCustomerHandler createHandler, 
-            UpdateCustomerHandler updateHandler) {
-            _createHandler = createHandler;
-            _updateHandler = updateHandler;
+        private readonly IMediator _mediator;
+
+        public CustomerController(IMediator mediator) {
+            _mediator = mediator;
         }
+        
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateCustomerRequest request)
+        public async Task<IActionResult> Post([FromBody] CreateCustomerCommand command)
         {
-            var command = new CreateCustomerCommand(request);
-            var customer = await _createHandler.Handle(command);
+            var customer = await _mediator.Send(command);
 
             return CreatedAtAction(nameof(Post), new { customer }, null);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] UpdateCustomerRequest request)
+        public async Task<IActionResult> Put([FromBody] UpdateCustomerCommand command)
         {
-            var command = new UpdateCustomerCommand(request);
-            var customer = await _updateHandler.Handle(command);
+            var customer = await _mediator.Send(command);
 
             return CreatedAtAction(nameof(Put), new { customer }, null);
         }
 
+        /// <summary>
+        /// Busca avançada de clientes com suporte a fuzzy search, busca exata e parcial
+        /// </summary>
+        /// <param name="command">Parâmetros de busca</param>
+        /// <param name="cancellationToken">Token de cancelamento</param>
+        /// <returns>Resultado paginado ordenado por relevância</returns>
+        [HttpPost("search")]
+        public async Task<IActionResult> Search([FromBody] SearchCustomerCommand command, CancellationToken cancellationToken)
+        {
+            if (command == null)
+            {
+                return BadRequest("Command não pode ser nulo");
+            }
+
+            var result = await _mediator.Send(command, cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpGet("duplicates")]
+        public async Task<IActionResult> Get([FromQuery] DuplicateListCommand command, CancellationToken cancellationToken)
+        {
+    
+            var result = await _mediator.Send(command, cancellationToken);
+            return Ok(result);
+        }
     }
 }

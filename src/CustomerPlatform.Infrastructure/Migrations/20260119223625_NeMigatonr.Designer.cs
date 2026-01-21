@@ -3,6 +3,7 @@ using System;
 using CustomerPlatform.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CustomerPlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(CustomerDbContext))]
-    partial class CustomerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260119223625_NeMigatonr")]
+    partial class NeMigatonr
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,37 +57,6 @@ namespace CustomerPlatform.Infrastructure.Migrations
                     b.ToTable("Customers", (string)null);
 
                     b.UseTptMappingStrategy();
-                });
-
-            modelBuilder.Entity("CustomerPlatform.Domain.Entities.SuspeitaDuplicidade", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("DataDeteccao")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DetalhesSimilaridade")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<Guid>("IdOriginal")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IdSuspeito")
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("Score")
-                        .HasColumnType("double precision");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdOriginal");
-
-                    b.HasIndex("IdSuspeito");
-
-                    b.ToTable("Suspeitas_Duplicidade", (string)null);
                 });
 
             modelBuilder.Entity("CustomerPlatform.Domain.Entities.ClientePessoaFisica", b =>
@@ -150,8 +122,8 @@ namespace CustomerPlatform.Infrastructure.Migrations
 
                             b1.Property<string>("CEP")
                                 .IsRequired()
-                                .HasMaxLength(10)
-                                .HasColumnType("character varying(10)")
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
                                 .HasColumnName("cep");
 
                             b1.Property<string>("Cidade")
@@ -193,25 +165,6 @@ namespace CustomerPlatform.Infrastructure.Migrations
 
                     b.Navigation("Endereco")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CustomerPlatform.Domain.Entities.SuspeitaDuplicidade", b =>
-                {
-                    b.HasOne("CustomerPlatform.Domain.Entities.Customer", "CustomerOriginal")
-                        .WithMany()
-                        .HasForeignKey("IdOriginal")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CustomerPlatform.Domain.Entities.Customer", "CustomerSuspeito")
-                        .WithMany()
-                        .HasForeignKey("IdSuspeito")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CustomerOriginal");
-
-                    b.Navigation("CustomerSuspeito");
                 });
 
             modelBuilder.Entity("CustomerPlatform.Domain.Entities.ClientePessoaFisica", b =>
