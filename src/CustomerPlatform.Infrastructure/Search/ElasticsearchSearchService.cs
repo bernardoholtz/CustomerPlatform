@@ -183,12 +183,15 @@ namespace CustomerPlatform.Infrastructure.Search
                 ));
             }
 
-            // Busca parcial por Email
+            // Busca por Email (exata ou parcial, case-insensitive)
+            // Usar MatchPhrase no campo analisado: Wildcard não funciona em text (tokenizado).
+            // MatchPhrase usa o analyzer (lowercase) e faz match de frase/substring.
             if (!string.IsNullOrWhiteSpace(request.Email))
             {
-                queries.Add(q.Wildcard(w => w
+                var emailTrimmed = request.Email.Trim();
+                queries.Add(q.MatchPhrase(m => m
                     .Field(f => f.Email)
-                    .Value($"*{request.Email.ToLower()}*")
+                    .Query(emailTrimmed)
                     .Boost(2.0)
                 ));
             }
