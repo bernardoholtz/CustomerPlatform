@@ -45,6 +45,34 @@ services.AddLogging(builder =>
 services.AddDbContext<CustomerDbContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("Postgres")));
 
+// Aplicar migrations automaticamente
+var serviceProviderForMigration = services.BuildServiceProvider();
+try
+{
+    using var scope = serviceProviderForMigration.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<CustomerDbContext>();
+    var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger("Migration");
+    
+    Console.WriteLine("Aplicando migrations do banco de dados...");
+    logger.LogInformation("Aplicando migrations do banco de dados...");
+    context.Database.Migrate();
+    Console.WriteLine("Migrations aplicadas com sucesso!");
+    logger.LogInformation("Migrations aplicadas com sucesso!");
+}
+catch (Exception ex)
+{
+    var loggerFactory = serviceProviderForMigration.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger("Migration");
+    Console.WriteLine($"Erro ao aplicar migrations: {ex.Message}");
+    logger.LogError(ex, "Erro ao aplicar migrations do banco de dados");
+    throw;
+}
+finally
+{
+    serviceProviderForMigration?.Dispose();
+}
+
 services.AddScoped<ICustomerRepository, CustomerRepository>();
 services.AddScoped<IUnitOfWork, UnitOfWork>();
 services.AddSingleton<IMessagePublisher, RabbitMQMessagePublisher>();

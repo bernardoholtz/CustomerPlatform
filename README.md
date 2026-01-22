@@ -1,135 +1,65 @@
 # Desafio Técnico: Plataforma de Cadastro de Clientes
 
-## 🎯 Bem-vindo!
+## Realize o passo a passo abaixo
 
-Este desafio técnico tem como objetivo avaliar sua **proficiência no uso de ferramentas de codificação assistida por IA** (GitHub Copilot, Cursor, ChatGPT, etc.) para desenvolvimento de soluções .NET de qualidade enterprise.
+1) Fazer o clone da Api utilizando o comando abaixo:
+https://github.com/bernardoholtz/CustomerPlatform.git
 
-**Importante:** O uso de ferramentas de IA é **OBRIGATÓRIO** e parte fundamental da avaliação. Você deverá documentar todos os prompts utilizados durante o desenvolvimento.
+2)Fazer o clone do Worker no mesmo diretório com o comando abaixo:
+https://github.com/bernardoholtz/Duplicatas.git
 
-## 📋 Contexto
+Você terá os dois diretórios
+../CustomerPlatform
+../Duplicatas
 
-Você trabalhará em um cenário baseado em problemas reais de negócio: **sistema de cadastro de clientes com deduplicação inteligente e busca avançada**.
 
-Para detalhes completos do problema e requisitos, consulte o arquivo [DESAFIO.md](DESAFIO.md).
+3)Navegar até o diretório cd CustomerPlatform e executar o comando abaixo para criar os containers Docker:
+ docker compose up
 
-## 🛠️ Pré-requisitos
-
-### Obrigatórios
-- **.NET 8 SDK** instalado
-- **Ferramentas de IA** configuradas (GitHub Copilot, Cursor, ChatGPT ou similar)
-- Git para versionamento
-
-### Escolhas Técnicas Obrigatórias
-
-Você **DEVE** escolher e implementar:
-
-1. **Banco de Dados** - relacional ou não relacional
-2. **Banco de Pesquisa Probabilística** - para buscas avançadas e deduplicação
-3. **Sistema de Mensageria** - para eventos assíncronos
-
-### Sugestões de Tecnologias
-
-Recomendamos (mas não é obrigatório):
-- **Banco de Dados:** PostgreSQL, SQL Server, MongoDB
-- **Pesquisa Probabilística:** ElasticSearch, Solr, Azure Cognitive Search
-- **Mensageria:** Kafka, RabbitMQ, Azure Service Bus, AWS SQS
-
-**Importante:** Justifique tecnicamente suas escolhas no documento de entrega.
-
-## 🚀 Como Executar o Projeto Base
-
-Este repositório contém uma estrutura inicial minimalista para você começar:
-
-```bash
-# Clone ou baixe o projeto
-
-# Navegue até a pasta
-cd Desafio-IA-DotNet
-
-# Restaure as dependências
+4)Executar o comando abaixo para restaurar dependências:
 dotnet restore
 
-# Execute o projeto
-dotnet run --project src/CustomerPlatform.Api
-```
 
-### Docker Compose (Opcional)
+5)Digite cd.. para retornar ao diretório src e navegue até cd CustomerPlatform.Script
+Executar o comando abaixo para rodar script de geração de dados fakes para clientes pessoa física e jurídica:
+dotnet run
 
-Fornecemos um arquivo `docker-compose.exemplo.yml` com sugestões de serviços de infraestrutura. Você pode usá-lo como referência:
+Esse script, criará clientes para testes e por consequência disso, novos mensagens para fila Rabbit serão enviadas. 
 
-```bash
-# Copie e ajuste conforme necessário
-cp docker-compose.exemplo.yml docker-compose.yml
+6) Retorne até src, navegue até cd CustomerPlatform.Api e execute comando abaixo para iniciar a Api:
+dotnet run
 
-# Suba os serviços
-docker-compose up -d
-```
+7)Em outro terminal, navegue até Duplicatas e execute o comando abaixo para restaurar pacotes:
+dotnet restore
 
-## 📝 Regras do Desafio
+8) Navegue até cd Duplicatas.Worker e execute comando abaixo para iniciar o Worker:
+dotnet run
 
-### 1. Uso Obrigatório de IA
+O Worker irá consumir a fila dos cadastros gerados pelo script e gerar eventos de duplicidade caso necessário.
 
-- ✅ **USE** ferramentas de IA para escrever código, criar testes, documentação, etc.
-- ✅ **DOCUMENTE** todos os prompts utilizados (veja TEMPLATE_ENTREGA.md)
-- ✅ **REFINE** seus prompts e documente as iterações
+9) Para acessar Api, entre no link abaixo:
+http://localhost:5000/swagger/index.html
 
-### 2. Qualidade Técnica
+10) Para visualização de filas no Rabbit, acessar link abaixo:
+http://localhost:15672/#/
 
-- Implemente as funcionalidades descritas em [DESAFIO.md](DESAFIO.md)
-- Siga boas práticas de desenvolvimento .NET
-- Escreva testes automatizados
-- Implemente observabilidade básica
+11)Para monitoração de logs e métricas, acessar link abaixo:
+http://localhost:3000/dashboards
 
-### 3. Escolhas Tecnológicas
+-------------------------------------------------------------------------------------------
 
-- Escolha as tecnologias que julgar mais adequadas
-- **Justifique tecnicamente** cada escolha
-- Documente trade-offs e decisões arquiteturais
+## Resumo do Projeto:
 
-## 📦 Como Entregar
+O projeto possui uma api com os endpoint de cadastro de clientes, edição de clientes, busca avançada e listagem de duplicados.
 
-### 1. Código Fonte
+No momento do cadastro ou edição, os dados do cliente são enviados até uma base ElasticSearch além de ser disparados eventos de mensageria ao Rabbit ("CienteAtualizado","ClienteCriado")
 
-Envie o projeto completo, incluindo:
-- Todo o código-fonte
-- Testes implementados
-- Arquivos de configuração
-- Scripts de execução (se houver)
+A busca avançada, pode ser combinada entre vários campos, sendo que o campo nome foi aplicado algoritmo Fuzzy para consulta.
 
-### 2. Documentação
+O worker consome a fila do rabbit e compara cada evento com a base ElasticSearch a fim de encontrar possíveis duplicatas. Foi aplicado técnica Levenshtein na consulta.
 
-**Obrigatório:**
-- `README.md` atualizado com instruções de execução
-- `DECISOES_TECNICAS.md` - justificativa de todas as escolhas tecnológicas
-- `PROMPTS_UTILIZADOS.md` - lista completa de prompts (use o template fornecido)
+Logs e métricas podem ser visualizados no dashboards feito com Grafana. A métricas são geradas Prometheus e os logs utilizando ILogger.
 
-### 3. Instruções de Execução
+Foi implementado testes unitários e de integração nas duas aplicações (Api e Worker)
 
-Seu projeto **DEVE** ser executável facilmente. Inclua:
-- Passos claros para configurar o ambiente
-- Como executar os testes
-- Como subir a aplicação
-- Como acessar endpoints/documentação da API
-
-### 4. Formato de Entrega
-
-- Repositório Git (GitHub, GitLab, Bitbucket) **OU**
-- Arquivo ZIP com todo o projeto
-
-## 🆘 Dúvidas?
-
-- Consulte o [DESAFIO.md](DESAFIO.md) para requisitos detalhados
-- Veja o [TEMPLATE_ENTREGA.md](TEMPLATE_ENTREGA.md) para formato de documentação dos prompts
-- Use sua criatividade e conhecimento técnico para tomar decisões
-- Entre em contato com o gestor da vaga via LinkedIn (Daniel Silva Moreira)
-
-## ⚡ Dica Final
-
-Este desafio avalia sua capacidade de:
-- Usar IA como ferramenta de produtividade
-- Tomar decisões arquiteturais fundamentadas
-- Comunicar escolhas técnicas de forma clara
-- Entregar software funcional e bem estruturado
-
-**Boa sorte! 🚀**
 
