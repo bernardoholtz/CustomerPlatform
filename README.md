@@ -16,34 +16,34 @@ Você terá os dois diretórios
 3-Navegar até o diretório cd CustomerPlatform e executar o comando abaixo para criar os containers Docker:
  docker compose up
 
-4)Executar o comando abaixo para restaurar dependências:
+4-Executar o comando abaixo para restaurar dependências:
 dotnet restore
 
 
-5)Digite cd.. para retornar ao diretório src e navegue até cd CustomerPlatform.Script
+5-Digite cd.. para retornar ao diretório src e navegue até cd CustomerPlatform.Script
 Executar o comando abaixo para rodar script de geração de dados fakes para clientes pessoa física e jurídica:
 dotnet run
 
 Esse script, criará clientes para testes e por consequência disso, novos mensagens para fila Rabbit serão enviadas. 
 
-6) Retorne até src, navegue até cd CustomerPlatform.Api e execute comando abaixo para iniciar a Api:
+6- Retorne até src, navegue até cd CustomerPlatform.Api e execute comando abaixo para iniciar a Api:
 dotnet run
 
-7)Em outro terminal, navegue até Duplicatas e execute o comando abaixo para restaurar pacotes:
+7-Em outro terminal, navegue até Duplicatas e execute o comando abaixo para restaurar pacotes:
 dotnet restore
 
-8) Navegue até cd Duplicatas.Worker e execute comando abaixo para iniciar o Worker:
+8- Navegue até cd Duplicatas.Worker e execute comando abaixo para iniciar o Worker:
 dotnet run
 
 O Worker irá consumir a fila dos cadastros gerados pelo script e gerar eventos de duplicidade caso necessário.
 
-9) Para acessar Api, entre no link abaixo:
+9- Para acessar Api, entre no link abaixo:
 http://localhost:5000/swagger/index.html
 
-10) Para visualização de filas no Rabbit, acessar link abaixo:
+10- Para visualização de filas no Rabbit, acessar link abaixo:
 http://localhost:15672/#/
 
-11)Para monitoração de logs e métricas, acessar link abaixo:
+11-Para monitoração de logs e métricas, acessar link abaixo:
 http://localhost:3000/dashboards
 
 -------------------------------------------------------------------------------------------
