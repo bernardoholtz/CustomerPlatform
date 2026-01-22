@@ -15,7 +15,7 @@ namespace CustomerPlatform.Application.Validators
 
             RuleFor(x => x.Email)
                 .NotEmpty()
-                .MaximumLength(20);
+                .MaximumLength(150);
 
             RuleFor(x => x.Email)
                 .NotNull();
