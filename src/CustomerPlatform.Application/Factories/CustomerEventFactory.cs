@@ -3,22 +3,13 @@ using CustomerPlatform.Domain.Events;
 
 namespace CustomerPlatform.Application.Factories
 {
-    /// <summary>
-    /// Factory para criação de eventos de Customer
-    /// </summary>
     public static class CustomerEventFactory
     {
-        /// <summary>
-        /// Cria um evento de Customer criado
-        /// </summary>
         public static CustomerEvent CreateCustomerCreatedEvent(Customer customer)
         {
             return CreateEvent(customer, "ClienteCriado");
         }
 
-        /// <summary>
-        /// Cria um evento de Customer atualizado
-        /// </summary>
         public static CustomerEvent CreateCustomerUpdatedEvent(Customer customer)
         {
             return CreateEvent(customer, "ClienteAtualizado");

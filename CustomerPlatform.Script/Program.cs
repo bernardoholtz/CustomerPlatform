@@ -71,7 +71,7 @@ IElasticsearchIndexService elasticsearchIndexService = serviceProvider.GetRequir
 await elasticsearchIndexService.DeleteAllAsync();
 
 Console.WriteLine("Iniciando processamento da massa Pessoa Física...");
-var massaDeDadosPF = DadosFakePessoaFisica.GerarMassaDeDados(200);
+var massaDeDadosPF = DadosFakePessoaFisica.GerarMassaDeDados(50);
 
 foreach (var item in massaDeDadosPF)
 {
@@ -123,7 +123,7 @@ foreach (var item in massaDeDadosPF)
 }
 
 Console.WriteLine("Iniciando processamento da massa Pessoa Jurídica...");
-var massaDeDadosPJ = DadosFakePessoaJuridica.GerarMassaDeDados(200);
+var massaDeDadosPJ = DadosFakePessoaJuridica.GerarMassaDeDados(50);
 
 foreach (var item in massaDeDadosPJ)
 {
