@@ -56,6 +56,8 @@ http://localhost:15672/#/
 
 http://localhost:3000/dashboards
 
+12- Acessar documentação da APi através do arquivo API.MD
+
 -------------------------------------------------------------------------------------------
 
 ## Resumo do Projeto:
