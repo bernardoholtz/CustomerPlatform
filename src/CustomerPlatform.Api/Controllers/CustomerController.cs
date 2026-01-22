@@ -158,10 +158,11 @@ namespace CustomerPlatform.Api.Controllers
         }
 
         /// <summary>
-        /// Editar cliente
+        /// Listar duplicatas. Formato dos parametros DataIni e DataFim Ex: (2026-01-01)
         /// </summary>
-        /// <param name="command">Parâmetros de busca</param>
-        /// <returns>Lista de duplicatas por relevância</returns>
+        /// <param name="DataIni">Data Início (2026-01-01)</param>
+        /// <param name="DataFim">Data Fim (2026-03-01)</param>
+        /// <returns>Lista de duplicatas por relevância. </returns>
         [HttpGet("duplicates")]
         public async Task<IActionResult> Get(
             [FromQuery] DuplicateListCommand command,
