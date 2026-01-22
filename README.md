@@ -24,8 +24,7 @@ Você terá os dois diretórios
 dotnet restore
 
 
-5-Digite cd.. para retornar ao diretório src e navegue até cd CustomerPlatform.Script
-Executar o comando abaixo para rodar script de geração de dados fakes para clientes pessoa física e jurídica:
+5-Digite cd src/CustomerPlatform.Script e em seguida execute o comando abaixo para rodar script de geração de dados fakes para clientes pessoa física e jurídica:
 
 dotnet run
 
