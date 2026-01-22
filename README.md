@@ -2,10 +2,10 @@
 
 ## Realize o passo a passo abaixo
 
-1) Fazer o clone da Api utilizando o comando abaixo:
+1- Fazer o clone da Api utilizando o comando abaixo:
 https://github.com/bernardoholtz/CustomerPlatform.git
 
-2)Fazer o clone do Worker no mesmo diretório com o comando abaixo:
+2-Fazer o clone do Worker no mesmo diretório com o comando abaixo:
 https://github.com/bernardoholtz/Duplicatas.git
 
 Você terá os dois diretórios
@@ -13,7 +13,7 @@ Você terá os dois diretórios
 ../Duplicatas
 
 
-3)Navegar até o diretório cd CustomerPlatform e executar o comando abaixo para criar os containers Docker:
+3-Navegar até o diretório cd CustomerPlatform e executar o comando abaixo para criar os containers Docker:
  docker compose up
 
 4)Executar o comando abaixo para restaurar dependências:
