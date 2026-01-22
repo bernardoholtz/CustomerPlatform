@@ -3,6 +3,7 @@ using CustomerPlatform.Application.Services;
 using CustomerPlatform.Domain.Entities;
 using CustomerPlatform.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CustomerPlatform.Application.Commands.UpdateCustomer
 {
@@ -12,63 +13,124 @@ namespace CustomerPlatform.Application.Commands.UpdateCustomer
         private readonly IMessagePublisher _messagePublisher;
         private readonly IDocumentValidationService _documentValidationService;
         private readonly IElasticsearchIndexService _elasticsearchIndexService;
+        private readonly ILogger<UpdateCustomerHandler> _logger;
 
         public UpdateCustomerHandler(
-            IUnitOfWork unitOfWork, 
+            IUnitOfWork unitOfWork,
             IMessagePublisher messagePublisher,
             IDocumentValidationService documentValidationService,
-            IElasticsearchIndexService elasticsearchIndexService)
+            IElasticsearchIndexService elasticsearchIndexService,
+            ILogger<UpdateCustomerHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _messagePublisher = messagePublisher;
             _documentValidationService = documentValidationService;
             _elasticsearchIndexService = elasticsearchIndexService;
+            _logger = logger;
         }
 
         public async Task<Guid> Handle(UpdateCustomerCommand command, CancellationToken cancellationToken)
         {
-            var customer = await _unitOfWork.Customers.BuscarPorId(command.Id);
-
-            if (customer == null)
+            try
             {
-                throw new InvalidOperationException("Cliente não encontrado.");
-            }
+                _logger.LogInformation(
+                    "Iniciando atualização de cliente. Id: {CustomerId}, Tipo: {TipoCliente}",
+                    command.Id,
+                    command.TipoCliente);
 
-            await ValidateDocumentAsync(customer, command);
+                var customer = await _unitOfWork.Customers.BuscarPorId(command.Id);
 
-            UpdateCustomerEntity(customer, command);
+                if (customer == null)
+                {
+                    _logger.LogWarning("Cliente não encontrado. Id: {CustomerId}", command.Id);
+                    throw new InvalidOperationException("Cliente não encontrado.");
+                }
 
-            await _unitOfWork.Customers.Editar(customer);
-            await _unitOfWork.CommitAsync();
+                await ValidateDocumentAsync(customer, command);
 
-            _ = Task.Run(async () =>
-            {
+                UpdateCustomerEntity(customer, command);
+
+                await _unitOfWork.Customers.Editar(customer);
+                await _unitOfWork.CommitAsync();
+
+                _logger.LogInformation(
+                    "Cliente atualizado com sucesso. Id: {CustomerId}",
+                    customer.Id);
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _elasticsearchIndexService.IndexCustomerAsync(customer, cancellationToken);
+                        _logger.LogDebug("Cliente {CustomerId} atualizado no Elasticsearch", customer.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(
+                            ex,
+                            "Erro ao atualizar índice do cliente {CustomerId} no Elasticsearch",
+                            customer.Id);
+                    }
+                }, cancellationToken);
+
                 try
                 {
-                    await _elasticsearchIndexService.IndexCustomerAsync(customer, cancellationToken);
+                    var evento = CustomerEventFactory.CreateCustomerUpdatedEvent(customer);
+                    await _messagePublisher.PublishAsync(evento, cancellationToken);
+                    _logger.LogDebug("Evento de atualização publicado para cliente {CustomerId}", customer.Id);
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(
+                        ex,
+                        "Erro ao publicar evento de atualização para cliente {CustomerId}",
+                        customer.Id);
+                    // Não relança a exceção para não falhar a atualização do cliente
                 }
-            }, cancellationToken);
 
-            var evento = CustomerEventFactory.CreateCustomerUpdatedEvent(customer);
-            await _messagePublisher.PublishAsync(evento, cancellationToken);
-
-            return customer.Id;
+                return customer.Id;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch (ArgumentException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Erro ao atualizar cliente. Id: {CustomerId}",
+                    command.Id);
+                throw;
+            }
         }
 
         private async Task ValidateDocumentAsync(Customer customer, UpdateCustomerCommand command)
         {
-            switch (customer)
+            try
             {
-                case ClientePessoaFisica:
-                    await _documentValidationService.ValidateCpfAsync(command.CPF!, command.Id);
-                    break;
+                switch (customer)
+                {
+                    case ClientePessoaFisica:
+                        _logger.LogDebug("Validando CPF para atualização do cliente {CustomerId}", customer.Id);
+                        await _documentValidationService.ValidateCpfAsync(command.CPF!, command.Id);
+                        break;
 
-                case ClientePessoaJuridica:
-                    await _documentValidationService.ValidateCnpjAsync(command.CNPJ!, command.Id);
-                    break;
+                    case ClientePessoaJuridica:
+                        _logger.LogDebug("Validando CNPJ para atualização do cliente {CustomerId}", customer.Id);
+                        await _documentValidationService.ValidateCnpjAsync(command.CNPJ!, command.Id);
+                        break;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                _logger.LogWarning(
+                    "Documento já existe para outro cliente. ClienteId: {CustomerId}",
+                    customer.Id);
+                throw;
             }
         }
 

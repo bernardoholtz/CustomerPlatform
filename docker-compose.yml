@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-   # Banco de Dados Relacional - PostgreSQL
+  # --- SEUS SERVIÇOS ORIGINAIS ---
   postgres:
     image: postgres:16-alpine
     container_name: customerplatform-postgres
@@ -16,7 +16,6 @@ services:
     networks:
       - customerplatform-network
 
-  # Message Broker - RabbitMQ
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: customerplatform-rabbitmq
@@ -24,8 +23,8 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5672:5672"   # Porta AMQP
-      - "15672:15672" # Porta Management UI
+      - "5672:5672"
+      - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -38,37 +37,85 @@ services:
       - node.name=customerplatform-es
       - cluster.name=customerplatform-cluster
       - discovery.type=single-node
-      - bootstrap.memory_lock=true
-
-      # Segurança DESATIVADA (DEV)
       - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
-
-      # JVM
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
-
     ulimits:
       memlock:
         soft: -1
         hard: -1
-
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
-
     ports:
       - "9200:9200"
-
     networks:
       - customerplatform-network
 
+  # --- MONITORAMENTO (PROMETHEUS, LOKI, GRAFANA) ---
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: customerplatform-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    networks:
+      - customerplatform-network
+
+  loki:
+    image: grafana/loki:3.0.0  # Force esta versão
+    container_name: customerplatform-loki
+    ports:
+      - "3100:3100"
+      - "4317:4317" # gRPC para Logs do .NET
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - customerplatform-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: customerplatform-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    networks:
+      - customerplatform-network
+    depends_on:
+      - prometheus
+      - loki
+
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: customerplatform-cadvisor
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - customerplatform-network
 
 volumes:
   postgres_data:
   rabbitmq_data:
   elasticsearch_data:
+  prometheus_data: # Novo volume
+  grafana_data:    # Novo volume
 
 networks:
   customerplatform-network:
     driver: bridge
-

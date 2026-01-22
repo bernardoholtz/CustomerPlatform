@@ -43,8 +43,5 @@ namespace CustomerPlatform.Application.Factories
                 _ => throw new ArgumentException("Tipo de cliente inválido")
             };
         }
-
-      
     }
-
 }

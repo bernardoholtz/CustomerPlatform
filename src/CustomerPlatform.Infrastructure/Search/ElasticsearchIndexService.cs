@@ -23,133 +23,203 @@ namespace CustomerPlatform.Infrastructure.Search
 
         public async Task EnsureIndexExistsAsync(CancellationToken cancellationToken = default)
         {
-            var existsResponse = await _elasticClient.Indices.ExistsAsync(IndexName, ct: cancellationToken);
-
-            if (!existsResponse.Exists)
+            try
             {
-                var createIndexResponse = await _elasticClient.Indices.CreateAsync(IndexName, c => c
-                    .Map<CustomerIndexDocument>(m => m
-                        .Properties(p => p
-                            .Keyword(k => k.Name(n => n.Id))
-                            .Keyword(k => k.Name(n => n.TipoCliente))
-                            .Text(t => t
-                                .Name(n => n.Nome)
-                                .Analyzer("standard")
-                                .Fields(f => f
-                                    .Keyword(k => k.Name("keyword"))
-                                    .Text(tt => tt.Name("fuzzy").Analyzer("standard"))
-                                )
-                            )
-                            .Text(t => t
-                                .Name(n => n.RazaoSocial)
-                                .Analyzer("standard")
-                                .Fields(f => f
-                                    .Keyword(k => k.Name("keyword"))
-                                    .Text(tt => tt.Name("fuzzy").Analyzer("standard"))
-                                )
-                            )
-                            .Text(t => t
-                                .Name(n => n.NomeFantasia)
-                                .Analyzer("standard")
-                                .Fields(f => f
-                                    .Keyword(k => k.Name("keyword"))
-                                    .Text(tt => tt.Name("fuzzy").Analyzer("standard"))
-                                )
-                            )
-                            .Keyword(k => k.Name(n => n.Documento))
-                            .Text(t => t
-                                .Name(n => n.Email)
-                                .Analyzer("standard")
-                                .Fields(f => f
-                                    .Keyword(k => k.Name("keyword"))
-                                )
-                            )
-                            .Text(t => t
-                                .Name(n => n.Telefone)
-                                .Analyzer("standard")
-                                .Fields(f => f
-                                    .Keyword(k => k.Name("keyword"))
-                                )
-                            )
-                            .Date(d => d.Name(n => n.DataCriacao))
-                            .Date(d => d.Name(n => n.DataAtualizacao))
-                            .Object<EnderecoIndexDocument>(o => o
-                                .Name(n => n.Endereco)
-                                .Properties(pp => pp
-                                    .Text(tt => tt.Name(nn => nn.Logradouro).Analyzer("standard"))
-                                    .Keyword(k => k.Name(nn => nn.Numero))
-                                    .Text(tt => tt.Name(nn => nn.Complemento).Analyzer("standard"))
-                                    .Text(tt => tt.Name(nn => nn.Cidade).Analyzer("standard"))
-                                    .Keyword(k => k.Name(nn => nn.Estado))
-                                    .Keyword(k => k.Name(nn => nn.CEP))
-                                )
-                            )
-                        )
-                    )
-                    .Settings(s => s
-                        .Analysis(a => a
-                            .Analyzers(an => an
-                                .Standard("standard", st => st
-                                    .StopWords("_none_")
-                                )
-                            )
-                        )
-                    ),
-                    cancellationToken);
+                _logger.LogDebug("Verificando se índice {IndexName} existe", IndexName);
+                var existsResponse = await _elasticClient.Indices.ExistsAsync(IndexName, ct: cancellationToken);
 
-                if (createIndexResponse.IsValid)
+                if (!existsResponse.Exists)
                 {
-                    _logger.LogInformation("Índice {IndexName} criado com sucesso", IndexName);
+                    _logger.LogInformation("Índice {IndexName} não existe. Criando...", IndexName);
+                    var createIndexResponse = await _elasticClient.Indices.CreateAsync(IndexName, c => c
+                        .Map<CustomerIndexDocument>(m => m
+                            .Properties(p => p
+                                .Keyword(k => k.Name(n => n.Id))
+                                .Keyword(k => k.Name(n => n.TipoCliente))
+                                .Text(t => t
+                                    .Name(n => n.Nome)
+                                    .Analyzer("standard")
+                                    .Fields(f => f
+                                        .Keyword(k => k.Name("keyword"))
+                                        .Text(tt => tt.Name("fuzzy").Analyzer("standard"))
+                                    )
+                                )
+                                .Text(t => t
+                                    .Name(n => n.RazaoSocial)
+                                    .Analyzer("standard")
+                                    .Fields(f => f
+                                        .Keyword(k => k.Name("keyword"))
+                                        .Text(tt => tt.Name("fuzzy").Analyzer("standard"))
+                                    )
+                                )
+                                .Text(t => t
+                                    .Name(n => n.NomeFantasia)
+                                    .Analyzer("standard")
+                                    .Fields(f => f
+                                        .Keyword(k => k.Name("keyword"))
+                                        .Text(tt => tt.Name("fuzzy").Analyzer("standard"))
+                                    )
+                                )
+                                .Keyword(k => k.Name(n => n.Documento))
+                                .Text(t => t
+                                    .Name(n => n.Email)
+                                    .Analyzer("standard")
+                                    .Fields(f => f
+                                        .Keyword(k => k.Name("keyword"))
+                                    )
+                                )
+                                .Text(t => t
+                                    .Name(n => n.Telefone)
+                                    .Analyzer("standard")
+                                    .Fields(f => f
+                                        .Keyword(k => k.Name("keyword"))
+                                    )
+                                )
+                                .Date(d => d.Name(n => n.DataCriacao))
+                                .Date(d => d.Name(n => n.DataAtualizacao))
+                                .Object<EnderecoIndexDocument>(o => o
+                                    .Name(n => n.Endereco)
+                                    .Properties(pp => pp
+                                        .Text(tt => tt.Name(nn => nn.Logradouro).Analyzer("standard"))
+                                        .Keyword(k => k.Name(nn => nn.Numero))
+                                        .Text(tt => tt.Name(nn => nn.Complemento).Analyzer("standard"))
+                                        .Text(tt => tt.Name(nn => nn.Cidade).Analyzer("standard"))
+                                        .Keyword(k => k.Name(nn => nn.Estado))
+                                        .Keyword(k => k.Name(nn => nn.CEP))
+                                    )
+                                )
+                            )
+                        )
+                        .Settings(s => s
+                            .Analysis(a => a
+                                .Analyzers(an => an
+                                    .Standard("standard", st => st
+                                        .StopWords("_none_")
+                                    )
+                                )
+                            )
+                        ),
+                        cancellationToken);
+
+                    if (createIndexResponse.IsValid)
+                    {
+                        _logger.LogInformation("Índice {IndexName} criado com sucesso", IndexName);
+                    }
+                    else
+                    {
+                        // Verifica se o erro é porque o índice já existe (race condition)
+                        if (createIndexResponse.ServerError?.Error?.Type == "resource_already_exists_exception")
+                        {
+                            _logger.LogInformation(
+                                "Índice {IndexName} já existe (criado por outra thread). Continuando...",
+                                IndexName);
+                        }
+                        else
+                        {
+                            _logger.LogError(
+                                "Erro ao criar índice {IndexName}: {Error}",
+                                IndexName,
+                                createIndexResponse.DebugInformation);
+                            throw new Exception($"Erro ao criar índice: {createIndexResponse.DebugInformation}");
+                        }
+                    }
                 }
                 else
                 {
-                    _logger.LogError("Erro ao criar índice {IndexName}: {Error}", IndexName, createIndexResponse.DebugInformation);
-                    throw new Exception($"Erro ao criar índice: {createIndexResponse.DebugInformation}");
+                    _logger.LogDebug("Índice {IndexName} já existe", IndexName);
                 }
+            }
+            catch (Exception ex)
+            {
+                // Se for erro de índice já existente, apenas loga e continua
+                if (ex.Message.Contains("resource_already_exists_exception") || 
+                    ex.Message.Contains("already exists"))
+                {
+                    _logger.LogInformation(
+                        "Índice {IndexName} já existe. Continuando...",
+                        IndexName);
+                    return;
+                }
+
+                _logger.LogError(
+                    ex,
+                    "Erro ao verificar/criar índice {IndexName}",
+                    IndexName);
+                throw;
             }
         }
 
         public async Task IndexCustomerAsync(Customer customer, CancellationToken cancellationToken = default)
         {
-            await EnsureIndexExistsAsync(cancellationToken);
-
-            var document = MapToIndexDocument(customer);
-
-            var response = await _elasticClient.IndexAsync(
-                document,
-                i => i.Index(IndexName).Id(customer.Id),
-                cancellationToken);
-
-            if (response.IsValid)
+            try
             {
-                _logger.LogInformation("Cliente {CustomerId} indexado com sucesso", customer.Id);
+                _logger.LogDebug("Iniciando indexação do cliente {CustomerId}", customer.Id);
+                await EnsureIndexExistsAsync(cancellationToken);
+
+                var document = MapToIndexDocument(customer);
+
+                var response = await _elasticClient.IndexAsync(
+                    document,
+                    i => i.Index(IndexName).Id(customer.Id),
+                    cancellationToken);
+
+                if (response.IsValid)
+                {
+                    _logger.LogInformation("Cliente {CustomerId} indexado com sucesso", customer.Id);
+                }
+                else
+                {
+                    _logger.LogError(
+                        "Erro ao indexar cliente {CustomerId}: {Error}",
+                        customer.Id,
+                        response.DebugInformation);
+                    throw new Exception($"Erro ao indexar cliente: {response.DebugInformation}");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogError("Erro ao indexar cliente {CustomerId}: {Error}", customer.Id, response.DebugInformation);
-                throw new Exception($"Erro ao indexar cliente: {response.DebugInformation}");
+                _logger.LogError(
+                    ex,
+                    "Erro ao indexar cliente {CustomerId}",
+                    customer.Id);
+                throw;
             }
         }
 
         public async Task DeleteCustomerAsync(Guid customerId, CancellationToken cancellationToken = default)
         {
-            var response = await _elasticClient.DeleteAsync<CustomerIndexDocument>(
-                customerId,
-                d => d.Index(IndexName),
-                cancellationToken);
+            try
+            {
+                _logger.LogDebug("Iniciando remoção do cliente {CustomerId} do índice", customerId);
+                var response = await _elasticClient.DeleteAsync<CustomerIndexDocument>(
+                    customerId,
+                    d => d.Index(IndexName),
+                    cancellationToken);
 
-            if (response.IsValid)
-            {
-                _logger.LogInformation("Cliente {CustomerId} removido do índice com sucesso", customerId);
+                if (response.IsValid)
+                {
+                    _logger.LogInformation("Cliente {CustomerId} removido do índice com sucesso", customerId);
+                }
+                else if (response.Result == Result.NotFound)
+                {
+                    _logger.LogWarning("Cliente {CustomerId} não encontrado no índice", customerId);
+                }
+                else
+                {
+                    _logger.LogError(
+                        "Erro ao remover cliente {CustomerId} do índice: {Error}",
+                        customerId,
+                        response.DebugInformation);
+                    throw new Exception($"Erro ao remover cliente do índice: {response.DebugInformation}");
+                }
             }
-            else if (response.Result == Result.NotFound)
+            catch (Exception ex)
             {
-                _logger.LogWarning("Cliente {CustomerId} não encontrado no índice", customerId);
-            }
-            else
-            {
-                _logger.LogError("Erro ao remover cliente {CustomerId} do índice: {Error}", customerId, response.DebugInformation);
-                throw new Exception($"Erro ao remover cliente do índice: {response.DebugInformation}");
+                _logger.LogError(
+                    ex,
+                    "Erro ao remover cliente {CustomerId} do índice",
+                    customerId);
+                throw;
             }
         }
 
@@ -195,13 +265,30 @@ namespace CustomerPlatform.Infrastructure.Search
 
         public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
         {
-            var response = await _elasticClient.Indices.DeleteAsync("customers");
-
-            if (response.IsValid)
+            try
             {
-                _logger.LogInformation("Clientes removidos com sucesso");
-            }
+                _logger.LogWarning("Iniciando remoção de todos os clientes do índice {IndexName}", IndexName);
+                var response = await _elasticClient.Indices.DeleteAsync("customers");
 
+                if (response.IsValid)
+                {
+                    _logger.LogInformation("Todos os clientes removidos com sucesso do índice {IndexName}", IndexName);
+                }
+                else
+                {
+                    _logger.LogError(
+                        "Erro ao remover todos os clientes: {Error}",
+                        response.DebugInformation);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Erro ao remover todos os clientes do índice {IndexName}",
+                    IndexName);
+                throw;
+            }
         }
     }
 }

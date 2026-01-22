@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.6.2" />
@@ -17,7 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CustomerPlatform.Application\CustomerPlatform.Application.csproj" />
     <ProjectReference Include="..\..\src\CustomerPlatform.Domain\CustomerPlatform.Domain.csproj" />
+    <ProjectReference Include="..\..\src\CustomerPlatform.Infrastructure\CustomerPlatform.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\CustomerPlatform.Api\CustomerPlatform.Api.csproj" />
   </ItemGroup>
 

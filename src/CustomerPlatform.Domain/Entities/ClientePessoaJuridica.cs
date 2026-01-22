@@ -4,7 +4,6 @@ namespace CustomerPlatform.Domain.Entities;
 
 public class ClientePessoaJuridica : Customer
 {
-
     public string RazaoSocial { get; private set; }
     public string NomeFantasia { get; private set; }
     public string CNPJ { get; private set; }
@@ -18,7 +17,7 @@ public class ClientePessoaJuridica : Customer
         string email,
         string telefone,
         Endereco endereco)
-        : base( email, telefone, endereco)
+        : base(email, telefone, endereco)
     {
         RazaoSocial = razaoSocial;
         NomeFantasia = nomeFantasia;
@@ -70,7 +69,7 @@ public class ClientePessoaJuridica : Customer
     {
         RazaoSocial = razaoSocial;
         NomeFantasia = nomeFantasia;
-        CNPJ = CNPJ;
+        CNPJ = cnpj;
 
         if (!ValidarDocumento())
             throw new ArgumentException("CNPJ inválido");

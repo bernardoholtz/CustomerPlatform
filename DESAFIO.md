@@ -97,12 +97,10 @@ Implementar lógica de detecção de clientes duplicados baseada em:
 - Documentos similares (com dígitos trocados)
 - Emails similares
 - Telefones iguais
-
-**Comportamento Esperado:**
 - Detecção assíncrona (não bloquear o cadastro)
 - Processar via eventos de mensageria
-- Gerar lista de possíveis duplicatas com score de similaridade
-- Armazenar suspeitas para análise posterior
+- Gerar lista de possíveis duplicatas com score de similaridade (realizar instert da analise em SuspeitaDuplicidade. Repositorio ja encontra-se criado)
+
 
 ### 4. Eventos de Domínio
 

@@ -19,24 +19,40 @@ namespace CustomerPlatform.Infrastructure.Search
             _logger = logger;
         }
 
-        public async Task<CustomerSearchResponse> SearchAsync(CustomerSearchRequest request, CancellationToken cancellationToken = default)
+        public async Task<CustomerSearchResponse> SearchAsync(
+            CustomerSearchRequest request,
+            CancellationToken cancellationToken = default)
         {
-            var searchDescriptor = new SearchDescriptor<CustomerIndexDocument>()
-                .Index(IndexName)
-                .From((request.Page - 1) * request.PageSize)
-                .Size(request.PageSize)
-                .Query(q => BuildQuery(request, q))
-                .Sort(s => s
-                    .Descending(SortSpecialField.Score)
-                    .Descending(d => d.DataCriacao));
-
-            var response = await _elasticClient.SearchAsync<CustomerIndexDocument>(searchDescriptor, cancellationToken);
-
-            if (!response.IsValid)
+            try
             {
-                _logger.LogError("Erro na busca: {Error}", response.DebugInformation);
-                throw new Exception($"Erro na busca: {response.DebugInformation}");
-            }
+                _logger.LogDebug(
+                    "Iniciando busca no Elasticsearch. Filtros: Nome={Nome}, CPF={CPF}, CNPJ={CNPJ}, Page={Page}, PageSize={PageSize}",
+                    request.Nome,
+                    request.CPF,
+                    request.CNPJ,
+                    request.Page,
+                    request.PageSize);
+
+                var searchDescriptor = new SearchDescriptor<CustomerIndexDocument>()
+                    .Index(IndexName)
+                    .From((request.Page - 1) * request.PageSize)
+                    .Size(request.PageSize)
+                    .Query(q => BuildQuery(request, q))
+                    .Sort(s => s
+                        .Descending(SortSpecialField.Score)
+                        .Descending(d => d.DataCriacao));
+
+                var response = await _elasticClient.SearchAsync<CustomerIndexDocument>(
+                    searchDescriptor,
+                    cancellationToken);
+
+                if (!response.IsValid)
+                {
+                    _logger.LogError(
+                        "Erro na busca no Elasticsearch: {Error}",
+                        response.DebugInformation);
+                    throw new Exception($"Erro na busca: {response.DebugInformation}");
+                }
 
             var results = response.Hits.Select(hit => new CustomerSearchResult
             {
@@ -62,16 +78,35 @@ namespace CustomerPlatform.Infrastructure.Search
                 } : null
             }).ToList();
 
-            return new CustomerSearchResponse
+                var searchResponse = new CustomerSearchResponse
+                {
+                    Results = results,
+                    Total = (int)response.Total,
+                    Page = request.Page,
+                    PageSize = request.PageSize
+                };
+
+                _logger.LogDebug(
+                    "Busca no Elasticsearch concluída. Total encontrado: {Total}",
+                    searchResponse.Total);
+
+                return searchResponse;
+            }
+            catch (Exception ex)
             {
-                Results = results,
-                Total = (int)response.Total,
-                Page = request.Page,
-                PageSize = request.PageSize
-            };
+                _logger.LogError(
+                    ex,
+                    "Erro ao realizar busca no Elasticsearch. Filtros: Nome={Nome}, CPF={CPF}, CNPJ={CNPJ}",
+                    request.Nome,
+                    request.CPF,
+                    request.CNPJ);
+                throw;
+            }
         }
 
-        private static QueryContainer BuildQuery(CustomerSearchRequest request, QueryContainerDescriptor<CustomerIndexDocument> q)
+        private static QueryContainer BuildQuery(
+            CustomerSearchRequest request,
+            QueryContainerDescriptor<CustomerIndexDocument> q)
         {
             var queries = new List<QueryContainer>();
 
@@ -140,7 +175,10 @@ namespace CustomerPlatform.Infrastructure.Search
             {
                 queries.Add(q.Term(t => t
                     .Field(f => f.Documento)
-                    .Value(request.CNPJ.Replace(".", "").Replace("-", "").Replace("/", ""))
+                    .Value(request.CNPJ
+                        .Replace(".", "")
+                        .Replace("-", "")
+                        .Replace("/", ""))
                     .Boost(5.0)
                 ));
             }

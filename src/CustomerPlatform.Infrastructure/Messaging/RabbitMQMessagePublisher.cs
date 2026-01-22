@@ -5,7 +5,6 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 
-
 namespace CustomerPlatform.Infrastructure.Messaging
 {
     public class RabbitMQMessagePublisher : IMessagePublisher, IDisposable
@@ -21,8 +20,8 @@ namespace CustomerPlatform.Infrastructure.Messaging
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            var hostName = configuration["RabbitMQ:HostName"] ;
-            var port = int.Parse(configuration["RabbitMQ:Port"] );
+            var hostName = configuration["RabbitMQ:HostName"];
+            var port = int.Parse(configuration["RabbitMQ:Port"]);
             var userName = configuration["RabbitMQ:UserName"];
             var password = configuration["RabbitMQ:Password"];
 
@@ -31,8 +30,7 @@ namespace CustomerPlatform.Infrastructure.Messaging
                 HostName = hostName,
                 Port = port,
                 UserName = userName,
-                Password = password,
-   
+                Password = password
             };
 
             try
@@ -47,7 +45,7 @@ namespace CustomerPlatform.Infrastructure.Messaging
             }
         }
 
-        public async Task PublishAsync<T>( T message, CancellationToken cancellationToken = default) where T : class
+        public async Task PublishAsync<T>(T message, CancellationToken cancellationToken = default) where T : class
         {
             try
             {
@@ -63,7 +61,7 @@ namespace CustomerPlatform.Infrastructure.Messaging
                 var body = Encoding.UTF8.GetBytes(json);
 
                 var properties = _channel.CreateBasicProperties();
-                properties.Persistent = true; 
+                properties.Persistent = true;
 
                 _channel.BasicPublish(
                     exchange: string.Empty,

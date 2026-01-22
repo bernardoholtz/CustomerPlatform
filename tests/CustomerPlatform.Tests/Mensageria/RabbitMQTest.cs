@@ -1,14 +1,13 @@
-﻿using Castle.Core.Resource;
-using CustomerPlatform.Application.Commands.CreateCustomer;
+﻿using CustomerPlatform.Application.Commands.CreateCustomer;
 using CustomerPlatform.Application.Services;
 using CustomerPlatform.Domain.Entities;
-using CustomerPlatform.Domain.Enums;
 using CustomerPlatform.Domain.Events;
 using CustomerPlatform.Domain.Interfaces;
 using CustomerPlatform.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace CustomerPlatform.Tests
+namespace CustomerPlatform.Tests.Mensageria
 {
     public class RabbitMQTest
     {
@@ -20,6 +19,7 @@ namespace CustomerPlatform.Tests
             var uow = new Mock<IUnitOfWork>();
             var service = new Mock<IDocumentValidationService>();
             var elastic = new Mock<IElasticsearchIndexService>();
+            var logger = Mock.Of<ILogger<CreateCustomerHandler>>();
 
             uow.Setup(u => u.Customers.Criar(It.IsAny<Customer>()))
                .ReturnsAsync((Customer c) => c);
@@ -28,7 +28,8 @@ namespace CustomerPlatform.Tests
                 uow.Object,
                 publisher.Object,
                 service.Object,
-                elastic.Object);
+                elastic.Object,
+                logger);
 
             var command = new CreateCustomerCommand
             {

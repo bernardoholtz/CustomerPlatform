@@ -24,9 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\CustomerPlatform.Application\CustomerPlatform.Application.csproj" />
-    <ProjectReference Include="..\src\CustomerPlatform.Domain\CustomerPlatform.Domain.csproj" />
-    <ProjectReference Include="..\src\CustomerPlatform.Infrastructure\CustomerPlatform.Infrastructure.csproj" />
+    <ProjectReference Include="..\CustomerPlatform.Application\CustomerPlatform.Application.csproj" />
+    <ProjectReference Include="..\CustomerPlatform.Domain\CustomerPlatform.Domain.csproj" />
+    <ProjectReference Include="..\CustomerPlatform.Infrastructure\CustomerPlatform.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

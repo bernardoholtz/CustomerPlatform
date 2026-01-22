@@ -9,7 +9,7 @@ public class Endereco
     public string Cidade { get; }
     public string Estado { get; }
 
-    protected Endereco () { }
+    protected Endereco() { }
     public Endereco(
         string logradouro,
         string numero,
